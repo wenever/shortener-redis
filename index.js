@@ -7,12 +7,13 @@ var app, base_url, bodyParser, client, express, port, rtg, shortid;
 // Declare values
 express = require('express');
 app = express();
-port = process.env.PORT || 3000;
+port = process.env.PORT || 5000;
 shortid = require('shortid');
 bodyParser = require('body-parser');
-base_url = process.env.BASE_URL || 'http://localhost:3000';
+base_url = process.env.BASE_URL || 'http://localhost:5000';
 
-// Set up connection to Redis
+/* set up connection to redis */
+/* istanbul ignore if */
 if (process.env.REDISTOGO_URL) {
 	rtg = require('url').parse(process.env.REDISTOGO_URL);
 	client = require('redis').createClient(rtg.port, rtg.hostname);
@@ -38,6 +39,24 @@ app.use(bodyParser.urlencoded({
 // Define index route
 app.get('/', function (req, res) {
 	res.render('index');
+});
+
+// Define submit route
+app.post('/', function (req, res) {
+    // Declare variables
+    var url, id;
+
+    // Get URL
+    url = req.body.url;
+
+    // Create a hashed short version
+    id = shortid.generate();
+
+    // Store them in Redis
+    client.set(id, url, function () {
+        // Display the response
+        res.render('output', { id: id, base_url: base_url });
+    });
 });
 
 // Serve static files
