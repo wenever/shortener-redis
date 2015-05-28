@@ -59,6 +59,26 @@ app.post('/', function (req, res) {
     });
 });
 
+// define link route
+app.route('/:id').all(function (req, res) {
+	// get id
+	var id = req.params.id.trim();
+
+	//look up the url
+	client.get(id, function (err, reply) {
+		if (!err && reply) {
+			 //redirect user to it
+			 res.status(301);
+			 res.set('Location', reply);
+			 res.send();
+		} else {
+			//confirm no such link in database
+				res.status(404);
+				res.render('error');
+		}
+	});
+});
+
 // Serve static files
 app.use (express.static(__dirname + '/static'));
 
